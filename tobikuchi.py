@@ -317,6 +317,8 @@ def build_script(script, builder):
         output_builder = OutputParameterBuilder(
                 o.name, canonize_enum(o.category))
         output_builder.DisplayName = o.display_name
+        if o.description is not None:
+            output_builder.Description = o.description
         builder.OutputParameters.Add(output_builder.Build())
 
 # find functions likely to need replacement by script
@@ -343,7 +345,6 @@ script_files = get_script_filenames()
 for fn in script_files:
     try:
         script = script_from_filename(fn)
-        print script
         candidates = replace_candidates(script)
         if not candidates:
             insert_script(script)
