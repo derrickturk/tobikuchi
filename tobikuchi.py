@@ -1,5 +1,8 @@
 import re
 
+from Spotfire.Dxp.Data.DataFunctions import *
+from Spotfire.Dxp.Data import DataType
+
 class Script(object):
     def __init__(self):
         self.name = None
@@ -171,9 +174,9 @@ def parse_input(script, line):
     if match.group(6) is not None:
         input.optional = True
 
-    input.category = match.group(7)
+    input.category = canonize(match.group(7))
 
-    types = list(map(str.strip, match.group(8).split('|')))
+    types = list(map(lambda s: canonize(s.strip()), match.group(8).split('|')))
     if any(t not in valid_types for t in types):
         raise ValueError('Invalid input type.')
     input.allowed_types = types
@@ -191,7 +194,7 @@ def parse_output(script, line):
     output.name = match.group(1)
     if match.group(5) is not None:
         output.display_name = match.group(5).strip()
-    output.category = match.group(6)
+    output.category = canonize(match.group(6))
     script.add_output(output)
 parse_output.output_re = re.compile(r'(((\.[_A-Za-z])|[A-Za-z])[._A-Za-z0-9]*)' +
         r'\s*({([^}]*)})?\s*::\s*(Value|Column|Table)', re.I)
@@ -220,13 +223,75 @@ valid_types = set([
     'Binary'
 ])
 
-def main(argv):
-    files = argv[1:]
-    for fn in files:
-        with open(fn) as f:
-            script = parse(f)
-            print(script)
+canonical = {
+    'INTEGER': ('Integer', DataType.Integer),
+    'REAL': ('Real', DataType.Real),
+    'SINGLEREAL': ('SingleReal', DataType.SingleReal),
+    'CURRENCY': ('Currency', DataType.Currency),
+    'STRING': ('String', DataType.String),
+    'DATE': ('Date', DataType.Date),
+    'TIME': ('Time', DataType.Time),
+    'DATETIME': ('DateTime', DataType.DateTime),
+    'BOOLEAN': ('Boolean', DataType.Boolean),
+    'BINARY': ('Binary', DataType.Binary),
+    'VALUE': ('Value', ParameterType.Value),
+    'COLUMN': ('Column', ParameterType.Column),
+    'TABLE': ('Table', ParameterType.Table)
+}
 
-import sys
-if __name__ == '__main__':
-    sys.exit(main(sys.argv))
+def canonize(ident):
+    ident_upper = ident.upper()
+    if ident_upper in canonical:
+        return canonical[ident_upper][0]
+    return ident
+
+def canonize_enum(ident):
+    ident_upper = ident.upper()
+    if ident_upper in canonical:
+        return canonical[ident_upper][1]
+    else:
+        raise ValueError('No Spotfire enum value for identifier.')
+
+def script_from_filename(fn):
+    try:
+        f = open(fn)
+        return parse(f)
+    finally:
+        f.close()
+
+# inject (add) a script into the Spotfire Document
+def inject_script(script):
+    builder = DataFunctionDefinitionBuilder(script.name,
+            DataFunctionExecutorTypeIdentifiers.TERRScriptExecutor)
+    builder.DisplayName = script.display_name
+    if script.description is not None:
+        builder.Description = script.description
+    builder.Settings['script'] = script.script
+
+    for i in script.inputs:
+        input_builder = InputParameterBuilder(
+                i.name, canonize_enum(i.category))
+        input_builder.DisplayName = i.display_name
+        input_builder.IsOptional = i.optional
+        if i.description is not None:
+            input_builder.Description = i.description
+        for t in i.allowed_types:
+            input_builder.AddAllowedDataType(canonize_enum(t))
+        builder.InputParameters.Add(input_builder.Build())
+
+    for o in script.outputs:
+        output_builder = OutputParameterBuilder(
+                o.name, canonize_enum(o.category))
+        output_builder.DisplayName = o.display_name
+        builder.OutputParameters.Add(output_builder.Build())
+
+    Document.Data.DataFunctions.AddNew(script.display_name, builder.Build())
+
+def get_script_filenames():
+    pass
+
+# spotfire "main"
+if __name__ == '__builtin__':
+    script = script_from_filename(r'C:\Users\Derrick\Desktop\example.R')
+    print script
+    inject_script(script)
