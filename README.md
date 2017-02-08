@@ -32,5 +32,7 @@ See [`example.R`](example.R) for a short example of tobikuchi command syntax.
 To use tobikuchi, add the contents of [`tobikuchi.py`](tobikuchi.py) as an IronPython script to a Spotfire project; when executed, it will launch a dialog for picking R script files.
 These files will be parsed as described above; when (function or display) names can be matched to existing data functions, these functions will be updated in-place. Otherwise, new functions will be added to the project.
 
+A supplementary tool, hikari, may be used to export data function definitions from an existing Spotfire project to .R files with tobikuchi command comments. To use hikari, add the contents of [`hikari.py'](hikari.py) as an IronPython script to the Spotfire project. When executed, hikari will launch a dialog allowing selection of a directory into which the .R files (with names taken from the data functions' display names) will be written.
+
 ### Available for commercial or non-commercial use under the Mozilla Public License Version 2.0
 ### (c) 2017 [dwt](https://github.com/derrickturk) | [terminus data science, LLC](https://www.terminusdatascience.com)
