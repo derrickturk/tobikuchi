@@ -6,5 +6,5 @@ tobikuchi is a simple tool for managing TERR (R) data functions in TIBCO Spotfir
 
 Well, thank God for their automation API, then.
 
-### License TBD
+### Available for commercial or non-commercial use under the Mozilla Public License Version 2.0
 ### (c) 2017 [dwt](github.com/derrickturk) | [terminus data science, LLC](www.terminusdatascience.com)
