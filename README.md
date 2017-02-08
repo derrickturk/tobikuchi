@@ -17,12 +17,15 @@ All commands are case-insensitive.
 |`TK_DESC` |Description   |`# TK_DESC This function does things...`                                 |
 |`TK_IN`   |Input         |`# TK_IN name [{ display name }] :: Category of Type1 [| Type2]...`      |
 |`TK_OUT`  |Output        |`# TK_OUT name [{ display name }] :: Category`                           |
+|`TK_AKA`  |Alias name    |`# TK_AKA Old Name of Function`                                          |
 
 The only required element is `TK_FN`, to give each function a name.
 
 The Category for an input or output may be `Value`, `Column`, or `Table`; the Type(s) for an input may be any Spotfire type (e.g. `Real`, `String`...).
 
 `TK_DESC` description lines are cumulative; each `TK_DESC` entry will add a line to the description of the "currently described entity", which is the function itself until the first input or output is encountered; subsequently the "currently described entity" is the last input or output definition processed.
+
+`TK_AKA` alias lines are used to allow transition of old projects to tobikuchi; scripts may declare alias names for matching against existing data functions. A new script definition will replace any data function whose display name or function name matches one of its aliases.
 
 See `example.R` for a short example of tobikuchi command syntax.
 

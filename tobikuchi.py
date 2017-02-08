@@ -26,6 +26,7 @@ class Script(object):
         self.description = None
         self.inputs = []
         self.outputs = []
+        self.aliases = []
         self._describe_next = self
 
     def add_script_line(self, line):
@@ -55,6 +56,9 @@ class Script(object):
     #   a linear parse
     def describe_next(self, line):
         self._describe_next.add_description_line(line)
+
+    def add_alias(self, alias):
+        self.aliases.append(alias)
 
     def _get_display_name(self):
         if self._display_name is None:
@@ -221,12 +225,16 @@ parse_output.output_re = re.compile(r'(((\.[_A-Za-z])|[A-Za-z])[._A-Za-z0-9]*)' 
 def parse_description(script, line):
     script.describe_next(line)
 
+def parse_alias(script, line):
+    script.add_alias(line.rstrip())
+
 handlers = {
     'FN': parse_fn_name,
     'DN': parse_fn_display_name,
     'IN': parse_input,
     'OUT': parse_output,
-    'DESC': parse_description
+    'DESC': parse_description,
+    'AKA': parse_alias
 }
 
 valid_types = set([
@@ -325,7 +333,9 @@ def build_script(script, builder):
 def replace_candidates(script):
     return [df for df in Document.Data.DataFunctions
             if df.Name == script.display_name
-            or df.DataFunctionDefinition.FunctionName == script.name]
+            or df.DataFunctionDefinition.FunctionName == script.name
+            or df.Name in script.aliases
+            or df.DataFunctionDefinition.FunctionName in script.aliases]
 
 # get user-selected set of filenames
 def get_script_filenames():
