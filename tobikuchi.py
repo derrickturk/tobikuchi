@@ -305,7 +305,7 @@ def build_script(script, builder):
     builder.FunctionName = script.name
     builder.DisplayName = script.display_name
     if script.description is not None:
-        builder.Description = script.description
+        builder.Description = script.description.replace('\n', '\r\n')
     builder.Settings['script'] = script.script
 
     builder.InputParameters.Clear()
@@ -315,7 +315,7 @@ def build_script(script, builder):
         input_builder.DisplayName = i.display_name
         input_builder.IsOptional = i.optional
         if i.description is not None:
-            input_builder.Description = i.description
+            input_builder.Description = i.description.replace('\n', '\r\n')
         for t in i.allowed_types:
             input_builder.AddAllowedDataType(canonize_enum(t))
         builder.InputParameters.Add(input_builder.Build())
@@ -326,7 +326,7 @@ def build_script(script, builder):
                 o.name, canonize_enum(o.category))
         output_builder.DisplayName = o.display_name
         if o.description is not None:
-            output_builder.Description = o.description
+            output_builder.Description = o.description.replace('\n', '\r\n')
         builder.OutputParameters.Add(output_builder.Build())
 
 # find functions likely to need replacement by script
