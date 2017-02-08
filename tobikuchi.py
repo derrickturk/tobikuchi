@@ -260,14 +260,28 @@ def script_from_filename(fn):
         f.close()
 
 # inject (add) a script into the Spotfire Document
-def inject_script(script):
+def insert_script(script):
     builder = DataFunctionDefinitionBuilder(script.name,
             DataFunctionExecutorTypeIdentifiers.TERRScriptExecutor)
+    build_script(script, builder)
+    Document.Data.DataFunctions.AddNew(script.display_name, builder.Build())
+
+# replace an existing data function with a script
+def replace_script(script, fn):
+    builder = DataFunctionDefinitionBuilder(fn.DataFunctionDefinition)
+    build_script(script, builder)
+    fn.DataFunctionDefinition = builder.Build()
+
+# use a DataFunctionDefinitionBuilder (new or existing) to prepare the
+#   script to be built
+def build_script(script, builder):
+    builder.FunctionName = script.name
     builder.DisplayName = script.display_name
     if script.description is not None:
         builder.Description = script.description
     builder.Settings['script'] = script.script
 
+    builder.InputParameters.Clear()
     for i in script.inputs:
         input_builder = InputParameterBuilder(
                 i.name, canonize_enum(i.category))
@@ -279,13 +293,18 @@ def inject_script(script):
             input_builder.AddAllowedDataType(canonize_enum(t))
         builder.InputParameters.Add(input_builder.Build())
 
+    builder.OutputParameters.Clear()
     for o in script.outputs:
         output_builder = OutputParameterBuilder(
                 o.name, canonize_enum(o.category))
         output_builder.DisplayName = o.display_name
         builder.OutputParameters.Add(output_builder.Build())
 
-    Document.Data.DataFunctions.AddNew(script.display_name, builder.Build())
+# find functions likely to need replacement by script
+def replace_candidates(script):
+    return [df for df in Document.Data.DataFunctions
+            if df.Name == script.display_name
+            or df.DataFunctionDefinition.FunctionName == script.name]
 
 def get_script_filenames():
     pass
@@ -294,4 +313,8 @@ def get_script_filenames():
 if __name__ == '__builtin__':
     script = script_from_filename(r'C:\Users\Derrick\Desktop\example.R')
     print script
-    inject_script(script)
+    candidates = replace_candidates(script)
+    if not candidates:
+        insert_script(script)
+    for f in replace_candidates(script):
+        replace_script(script, f)
