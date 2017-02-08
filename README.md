@@ -10,14 +10,14 @@ tobikuchi uses special R comments beginning with `# TK_` to understand a data fu
 The full set of commands is described below; optional elements are indicated in `[braces]`; these braces do not appear in actual code.
 All commands are case-insensitive.
 
-|Command   |Description   |Syntax                                                                   |
-|----------|--------------|-------------------------------------------------------------------------|
-|`TK_FN`   |Function name |`# TK_FN MyTERRFunction`                                                 |
-|`TK_DN`   |Display name  |`# TK_DN Display Name of My Function`                                    |
-|`TK_DESC` |Description   |`# TK_DESC This function does things...`                                 |
-|`TK_IN`   |Input         |`# TK_IN name [{ display name }] :: Category of Type1 [| Type2]...`      |
-|`TK_OUT`  |Output        |`# TK_OUT name [{ display name }] :: Category`                           |
-|`TK_AKA`  |Alias name    |`# TK_AKA Old Name of Function`                                          |
+|Command   |Description   |Syntax                                                                                |
+|----------|--------------|--------------------------------------------------------------------------------------|
+|`TK_FN`   |Function name |`# TK_FN MyTERRFunction`                                                              |
+|`TK_DN`   |Display name  |`# TK_DN Display Name of My Function`                                                 |
+|`TK_DESC` |Description   |`# TK_DESC This function does things...`                                              |
+|`TK_IN`   |Input         |`# TK_IN name [{ display name }] :: [Optional] Category of Type1 [| Type2]...`        |
+|`TK_OUT`  |Output        |`# TK_OUT name [{ display name }] :: Category`                                        |
+|`TK_AKA`  |Alias name    |`# TK_AKA Old Name of Function`                                                       |
 
 The only required element is `TK_FN`, to give each function a name.
 
