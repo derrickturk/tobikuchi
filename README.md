@@ -1,6 +1,6 @@
 # tobikuchi
 ## a pointy stick for fighting (spot) fires
-### by [dwt](github.com/derrickturk) | [terminus data science, LLC](www.terminusdatascience.com)
+### by [dwt](https://github.com/derrickturk) | [terminus data science, LLC](https://www.terminusdatascience.com)
 
 tobikuchi is a simple tool for managing TERR (R) data functions in TIBCO Spotfire. As a "visual analytics" tool, Spotfire falls into the ever-growing category of "secret development platforms beloved by end-users but hated by programmers, with absolutely no sensible source file management nor build system".
 
@@ -27,10 +27,10 @@ The Category for an input or output may be `Value`, `Column`, or `Table`; the Ty
 
 `TK_AKA` alias lines are used to allow transition of old projects to tobikuchi; scripts may declare alias names for matching against existing data functions. A new script definition will replace any data function whose display name or function name matches one of its aliases.
 
-See `example.R` for a short example of tobikuchi command syntax.
+See [`example.R`](example.R) for a short example of tobikuchi command syntax.
 
-To use tobikuchi, add the contents of `tobikuchi.py` as an IronPython script to a Spotfire project; when executed, it will launch a dialog for picking R script files.
+To use tobikuchi, add the contents of [`tobikuchi.py`](tobikuchi.py) as an IronPython script to a Spotfire project; when executed, it will launch a dialog for picking R script files.
 These files will be parsed as described above; when (function or display) names can be matched to existing data functions, these functions will be updated in-place. Otherwise, new functions will be added to the project.
 
 ### Available for commercial or non-commercial use under the Mozilla Public License Version 2.0
-### (c) 2017 [dwt](github.com/derrickturk) | [terminus data science, LLC](www.terminusdatascience.com)
+### (c) 2017 [dwt](https://github.com/derrickturk) | [terminus data science, LLC](https://www.terminusdatascience.com)
