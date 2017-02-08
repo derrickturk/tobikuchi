@@ -10,17 +10,6 @@ class Script(object):
         self.outputs = []
         self._describe_next = self
 
-    @property
-    def display_name(self):
-        if self._display_name is None:
-            return self.name
-        else:
-            return self._display_name
-
-    @display_name.setter
-    def display_name(self, name):
-        self._display_name = name
-
     def add_script_line(self, line):
         self.script += line
 
@@ -49,6 +38,17 @@ class Script(object):
     def describe_next(self, line):
         self._describe_next.add_description_line(line)
 
+    def _get_display_name(self):
+        if self._display_name is None:
+            return self.name
+        else:
+            return self._display_name
+
+    def _set_display_name(self, name):
+        self._display_name = name
+
+    display_name = property(_get_display_name, _set_display_name)
+
     def __str__(self):
         desc = 'Function %s (%s)\n%s' % (
             self.name,
@@ -74,23 +74,23 @@ class Input(object):
         self.allowed_types = []
         self.optional = False
 
-    @property
-    def display_name(self):
-        if self._display_name is None:
-            return self.name
-        else:
-            return self._display_name
-
-    @display_name.setter
-    def display_name(self, name):
-        self._display_name = name
-
     def add_description_line(self, line):
         if self.description is None:
             self.description = line.rstrip()
         else:
             self.description += '\n'
             self.description += line.rstrip()
+
+    def _get_display_name(self):
+        if self._display_name is None:
+            return self.name
+        else:
+            return self._display_name
+
+    def _set_display_name(self, name):
+        self._display_name = name
+
+    display_name = property(_get_display_name, _set_display_name)
 
     def __str__(self):
         return '%s { %s } :: %s%s of %s%s' % (
@@ -109,23 +109,24 @@ class Output(object):
         self.description = None
         self.category = None
 
-    @property
-    def display_name(self):
-        if self._display_name is None:
-            return self.name
-        else:
-            return self._display_name
-
-    @display_name.setter
-    def display_name(self, name):
-        self._display_name = name
-
     def add_description_line(self, line):
         if self.description is None:
             self.description = line.rstrip()
         else:
             self.description += '\n'
             self.description += line.rstrip()
+
+    def _get_display_name(self):
+        if self._display_name is None:
+            return self.name
+        else:
+            return self._display_name
+
+    def _set_display_name(self, name):
+        self._display_name = name
+
+    display_name = property(_get_display_name, _set_display_name)
+
 
     def __str__(self):
         return '%s { %s } :: %s%s' % (
