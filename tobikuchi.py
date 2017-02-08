@@ -32,13 +32,13 @@ class Script(object):
 
     def add_input(self, input):
         if input.name in (i.name for i in self.inputs):
-            raise ValueError('Duplicate input name.')
+            raise ValueError('Duplicate input name: ' + input.name)
         self.inputs.append(input)
         self._describe_next = input
 
     def add_output(self, output):
         if output.name in (o.name for o in self.outputs):
-            raise ValueError('Duplicate output name.')
+            raise ValueError('Duplicate output name: ' + output.name)
         self.outputs.append(output)
         self._describe_next = output
 
@@ -154,12 +154,12 @@ def parse(stream):
         if match:
             command = match.group(1).upper()
             if command not in handlers:
-                raise ValueError('Invalid TK command.')
+                raise ValueError('Invalid TK command: ' + command)
             handlers[command](script, line[match.span()[1]:].lstrip())
         script.add_script_line(line)
 
     if script.name is None:
-        raise ValueError('Not a TK-annotated script.')
+        raise ValueError('Not a TK-annotated script (missing TK_FN).')
 
     return script
 parse.annotation_re = re.compile(r'^\s*#\s*TK_(\w+)', re.I)
@@ -173,7 +173,7 @@ def parse_fn_display_name(script, line):
 def parse_input(script, line):
     match = parse_input.input_re.match(line)
     if not match:
-        raise ValueError('Invalid input description.')
+        raise ValueError('Invalid input description: ' + line)
 
     input = Input()
     input.name = match.group(1)
@@ -187,8 +187,9 @@ def parse_input(script, line):
     input.category = canonize(match.group(7))
 
     types = list(map(lambda s: canonize(s.strip()), match.group(8).split('|')))
-    if any(t not in valid_types for t in types):
-        raise ValueError('Invalid input type.')
+    bad_types = list(filter(lambda t: t not in valid_types, types))
+    if bad_types:
+        raise ValueError('Invalid input type: ' + ', '.join(bad_types))
     input.allowed_types = types
 
     script.add_input(input)
@@ -199,7 +200,7 @@ parse_input.input_re = re.compile(r'(((\.[_A-Za-z])|[A-Za-z])[._A-Za-z0-9]*)' +
 def parse_output(script, line):
     match = parse_output.output_re.match(line)
     if not match:
-        raise ValueError('Invalid output description.')
+        raise ValueError('Invalid output description: ' + line)
     output = Output()
     output.name = match.group(1)
     if match.group(5) is not None:
@@ -260,7 +261,7 @@ def canonize_enum(ident):
     if ident_upper in canonical:
         return canonical[ident_upper][1]
     else:
-        raise ValueError('No Spotfire enum value for identifier.')
+        raise ValueError('Identifier not recognized: ' + ident)
 
 def script_from_filename(fn):
     try:
