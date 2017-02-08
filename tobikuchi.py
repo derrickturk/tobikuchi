@@ -38,7 +38,7 @@ class Script(object):
     def add_output(self, output):
         if output.name in (o.name for o in self.outputs):
             raise ValueError('Duplicate output name.')
-        self.output.append(output)
+        self.outputs.append(output)
 
 class Input(object):
     def __init__(self):
@@ -47,6 +47,7 @@ class Input(object):
         self.description = None
         self.category = None
         self.allowed_types = []
+        self.optional = False
 
     @property
     def display_name(self):
@@ -65,6 +66,47 @@ class Input(object):
         else:
             self.description += '\n'
             self.description += line.rstrip()
+
+    def __str__(self):
+        return '%s { %s } :: %s%s of %s' % (
+            self.name,
+            self.display_name,
+            'Optional ' if self.optional else '',
+            self.category,
+            ' | '.join(self.allowed_types)
+        )
+
+class Output(object):
+    def __init__(self):
+        self.name = None
+        self._display_name = None
+        self.description = None
+        self.category = None
+
+    @property
+    def display_name(self):
+        if self._display_name is None:
+            return self.name
+        else:
+            return self._display_name
+
+    @display_name.setter
+    def display_name(self, name):
+        self._display_name = name
+
+    def add_description_line(self, line):
+        if self.description is None:
+            self.description = line.rstrip()
+        else:
+            self.description += '\n'
+            self.description += line.rstrip()
+
+    def __str__(self):
+        return '%s { %s } :: %s' % (
+            self.name,
+            self.display_name,
+            self.category
+        )
 
 def parse(stream):
     script = Script()
@@ -91,21 +133,40 @@ def parse_input(script, line):
     match = parse_input.input_re.match(line)
     if not match:
         raise ValueError('Invalid input description.')
+
     input = Input()
     input.name = match.group(1)
+
     if match.group(5) is not None:
         input.display_name = match.group(5).strip()
-    input.category = match.group(6)
-    types = map(str.strip, match.group(7).split('|'))
+
+    if match.group(6) is not None:
+        input.optional = True
+
+    input.category = match.group(7)
+
+    types = list(map(str.strip, match.group(8).split('|')))
     if any(t not in valid_types for t in types):
         raise ValueError('Invalid input type.')
+    input.allowed_types = types
+
     script.add_input(input)
 parse_input.input_re = re.compile(r'(((\.[_A-Za-z])|[A-Za-z])[._A-Za-z0-9]*)' +
-        r'\s*({([^}]*)})?\s*::\s*(Value|Column|Table)\s+of\s+' +
+        r'\s*({([^}]*)})?\s*::\s*(Optional)?\s*(Value|Column|Table)\s+of\s+' +
         r'(\w+(\s*\|\s*\w+)*)', re.I)
 
 def parse_output(script, line):
-    pass
+    match = parse_output.output_re.match(line)
+    if not match:
+        raise ValueError('Invalid output description.')
+    output = Output()
+    output.name = match.group(1)
+    if match.group(5) is not None:
+        output.display_name = match.group(5).strip()
+    output.category = match.group(6)
+    script.add_output(output)
+parse_output.output_re = re.compile(r'(((\.[_A-Za-z])|[A-Za-z])[._A-Za-z0-9]*)' +
+        r'\s*({([^}]*)})?\s*::\s*(Value|Column|Table)', re.I)
 
 def parse_description(script, line):
     script.add_description_line(line)
@@ -140,7 +201,9 @@ def main(argv):
             print(script.name)
             print(script.script)
             for i in script.inputs:
-                print(i.name)
+                print(i)
+            for o in script.outputs:
+                print(o)
 
 import sys
 if __name__ == '__main__':
