@@ -24,7 +24,11 @@ def dump_function(df, stream):
     dump_script(builder, stream)
 
 def dump_header(builder, stream):
-    stream.write('# TK_FN %s\n' % builder.FunctionName)
+    # Spotfire likes to give every function the FunctionName 'Untitled'
+    stream.write('# TK_FN %s\n' % (builder.FunctionName
+        if builder.FunctionName != 'Untitled'
+        else builder.DisplayName
+    ))
     stream.write('# TK_DN %s\n' % builder.DisplayName)
     if builder.Description:
         for line in builder.Description.split('\n'):
