@@ -24,5 +24,8 @@ The Category for an input or output may be `Value`, `Column`, or `Table`; the Ty
 
 `TK_DESC` description lines are cumulative; each `TK_DESC` entry will add a line to the description of the "currently described entity", which is the function itself until the first input or output is encountered; subsequently the "currently described entity" is the last input or output definition processed.
 
+To use tobikuchi, add the contents of `tobikuchi.py` as an IronPython script to a Spotfire project; when executed, it will launch a dialog for picking R script files.
+These files will be parsed as described above; when (function or display) names can be matched to existing data functions, these functions will be updated in-place. Otherwise, new functions will be added to the project.
+
 ### Available for commercial or non-commercial use under the Mozilla Public License Version 2.0
 ### (c) 2017 [dwt](github.com/derrickturk) | [terminus data science, LLC](www.terminusdatascience.com)
