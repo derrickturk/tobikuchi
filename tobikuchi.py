@@ -1,5 +1,12 @@
 import re
 
+import clr
+clr.AddReference('System.Windows.Forms')
+
+from System.Windows.Forms import OpenFileDialog, DialogResult
+from System.Windows.Forms import MessageBox
+from System.Windows.Forms import MessageBoxIcon, MessageBoxButtons
+
 from Spotfire.Dxp.Data.DataFunctions import *
 from Spotfire.Dxp.Data import DataType
 
@@ -150,6 +157,9 @@ def parse(stream):
                 raise ValueError('Invalid TK command.')
             handlers[command](script, line[match.span()[1]:].lstrip())
         script.add_script_line(line)
+
+    if script.name is None:
+        raise ValueError('Not a TK-annotated script.')
 
     return script
 parse.annotation_re = re.compile(r'^\s*#\s*TK_(\w+)', re.I)
@@ -306,15 +316,29 @@ def replace_candidates(script):
             if df.Name == script.display_name
             or df.DataFunctionDefinition.FunctionName == script.name]
 
+# get user-selected set of filenames
 def get_script_filenames():
-    pass
+    file_dialog = OpenFileDialog()
+    file_dialog.Filter = 'R scripts (*.R)|*.R|All files (*.*)|*.*'
+    file_dialog.Multiselect = True
+    if file_dialog.ShowDialog() != DialogResult.OK:
+        return []
+    return list(file_dialog.FileNames)
+
+def report_error(fn, err):
+    MessageBox.Show('Error processing %s:\n%s' % (fn, err),
+            'tobikuchi error', MessageBoxButtons.OK, MessageBoxIcon.Error)
 
 # spotfire "main"
-if __name__ == '__builtin__':
-    script = script_from_filename(r'C:\Users\Derrick\Desktop\example.R')
-    print script
-    candidates = replace_candidates(script)
-    if not candidates:
-        insert_script(script)
-    for f in replace_candidates(script):
-        replace_script(script, f)
+script_files = get_script_filenames()
+for fn in script_files:
+    try:
+        script = script_from_filename(fn)
+        print script
+        candidates = replace_candidates(script)
+        if not candidates:
+            insert_script(script)
+        for f in replace_candidates(script):
+            replace_script(script, f)
+    except Exception, e:
+        report_error(fn, e)
