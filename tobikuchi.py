@@ -40,6 +40,22 @@ class Script(object):
             raise ValueError('Duplicate output name.')
         self.outputs.append(output)
 
+    def __str__(self):
+        desc = 'Function %s (%s)\n%s' % (
+            self.name,
+            self.display_name,
+            self.description + '\n' if self.description else ''
+        )
+        desc += 'Inputs:\n'
+        for i in self.inputs:
+            desc += '\t' + str(i) + '\n'
+        desc += 'Outputs:\n'
+        for o in self.outputs:
+            desc += '\t' + str(o) + '\n'
+        desc += 'Script:\n'
+        desc += self.script
+        return desc
+
 class Input(object):
     def __init__(self):
         self.name = None
@@ -198,12 +214,6 @@ def main(argv):
         with open(fn) as f:
             script = parse(f)
             print(script)
-            print(script.name)
-            print(script.script)
-            for i in script.inputs:
-                print(i)
-            for o in script.outputs:
-                print(o)
 
 import sys
 if __name__ == '__main__':
