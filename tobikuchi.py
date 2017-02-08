@@ -8,6 +8,7 @@ class Script(object):
         self.description = None
         self.inputs = []
         self.outputs = []
+        self._describe_next = self
 
     @property
     def display_name(self):
@@ -34,11 +35,19 @@ class Script(object):
         if input.name in (i.name for i in self.inputs):
             raise ValueError('Duplicate input name.')
         self.inputs.append(input)
+        self._describe_next = input
 
     def add_output(self, output):
         if output.name in (o.name for o in self.outputs):
             raise ValueError('Duplicate output name.')
         self.outputs.append(output)
+        self._describe_next = output
+
+    # add a description line to whatever is currently 'ready for description'
+    #   i.e. first the script, then each input and output in turn, when doing
+    #   a linear parse
+    def describe_next(self, line):
+        self._describe_next.add_description_line(line)
 
     def __str__(self):
         desc = 'Function %s (%s)\n%s' % (
@@ -84,12 +93,13 @@ class Input(object):
             self.description += line.rstrip()
 
     def __str__(self):
-        return '%s { %s } :: %s%s of %s' % (
+        return '%s { %s } :: %s%s of %s%s' % (
             self.name,
             self.display_name,
             'Optional ' if self.optional else '',
             self.category,
-            ' | '.join(self.allowed_types)
+            ' | '.join(self.allowed_types),
+            '\n\t' + self.description if self.description else ''
         )
 
 class Output(object):
@@ -118,10 +128,11 @@ class Output(object):
             self.description += line.rstrip()
 
     def __str__(self):
-        return '%s { %s } :: %s' % (
+        return '%s { %s } :: %s%s' % (
             self.name,
             self.display_name,
-            self.category
+            self.category,
+            '\n\t' + self.description if self.description else ''
         )
 
 def parse(stream):
@@ -185,7 +196,7 @@ parse_output.output_re = re.compile(r'(((\.[_A-Za-z])|[A-Za-z])[._A-Za-z0-9]*)' 
         r'\s*({([^}]*)})?\s*::\s*(Value|Column|Table)', re.I)
 
 def parse_description(script, line):
-    script.add_description_line(line)
+    script.describe_next(line)
 
 handlers = {
     'FN': parse_fn_name,
