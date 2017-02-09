@@ -26,7 +26,7 @@ class Script(object):
         self.description = None
         self.inputs = []
         self.outputs = []
-        self.aliases = []
+        self.aliases = set()
         self.allow_caching = True
         self._describe_next = self
 
@@ -59,7 +59,7 @@ class Script(object):
         self._describe_next.add_description_line(line)
 
     def add_alias(self, alias):
-        self.aliases.append(alias)
+        self.aliases.add(alias)
 
     def _get_display_name(self):
         if self._display_name is None:
@@ -340,8 +340,10 @@ def build_script(script, builder):
 def replace_candidates(script):
     return [df for df in Document.Data.DataFunctions
             if df.Name == script.display_name
+            or df.DataFunctionDefinition.DisplayName == script.display_name
             or df.DataFunctionDefinition.FunctionName == script.name
             or df.Name in script.aliases
+            or df.DataFunctionDefinition.DisplayName in script.aliases
             or df.DataFunctionDefinition.FunctionName in script.aliases]
 
 # get user-selected set of filenames
