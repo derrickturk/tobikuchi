@@ -27,6 +27,7 @@ class Script(object):
         self.inputs = []
         self.outputs = []
         self.aliases = []
+        self.allow_caching = True
         self._describe_next = self
 
     def add_script_line(self, line):
@@ -149,7 +150,6 @@ class Output(object):
 
     display_name = property(_get_display_name, _set_display_name)
 
-
     def __str__(self):
         return '%s { %s } :: %s%s' % (
             self.name,
@@ -228,13 +228,19 @@ def parse_description(script, line):
 def parse_alias(script, line):
     script.add_alias(line.rstrip())
 
+def parse_nocache(script, line):
+    if line.strip():
+        raise ValueError('Additional arguments to TK_NOCACHE.')
+    script.allow_caching = False
+
 handlers = {
     'FN': parse_fn_name,
     'DN': parse_fn_display_name,
     'IN': parse_input,
     'OUT': parse_output,
     'DESC': parse_description,
-    'AKA': parse_alias
+    'AKA': parse_alias,
+    'NOCACHE': parse_nocache
 }
 
 valid_types = set([
@@ -304,6 +310,7 @@ def replace_script(script, fn):
 def build_script(script, builder):
     builder.FunctionName = script.name
     builder.DisplayName = script.display_name
+    builder.AllowCaching = script.allow_caching
     if script.description is not None:
         builder.Description = script.description.replace('\n', '\r\n')
     builder.Settings['script'] = script.script

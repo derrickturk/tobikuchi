@@ -30,6 +30,8 @@ def dump_header(builder, stream):
         else builder.DisplayName
     ))
     stream.write('# TK_DN %s\n' % builder.DisplayName)
+    if not builder.AllowCaching:
+        stream.write('# TK_NOCACHE\n')
     if builder.Description:
         for line in builder.Description.split('\n'):
             stream.write('# TK_DESC %s\n' % line)
