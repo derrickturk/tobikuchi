@@ -6,6 +6,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import re
+
 import clr
 clr.AddReference('System.Windows.Forms')
 
@@ -32,9 +34,7 @@ def dump_header(builder, stream):
     stream.write('# TK_DN %s\n' % builder.DisplayName)
     if not builder.AllowCaching:
         stream.write('# TK_NOCACHE\n')
-    if builder.Description:
-        for line in builder.Description.split('\n'):
-            stream.write('# TK_DESC %s\n' % line)
+    dump_description(builder.Description, stream)
 
 def dump_input(ip, stream):
     stream.write('# TK_IN %s%s :: %s%s of %s\n' % (
@@ -44,9 +44,7 @@ def dump_input(ip, stream):
         ip.ParameterType.ToString(),
         ' | '.join(dt.ToString() for dt in ip.AllowedDataTypes)
     ))
-    if ip.Description:
-        for line in ip.Description.split('\n'):
-            stream.write('# TK_DESC %s\n' % line)
+    dump_description(ip.Description, stream)
 
 def dump_output(op, stream):
     stream.write('# TK_OUT %s%s :: %s\n' % (
@@ -54,14 +52,20 @@ def dump_output(op, stream):
         ' { ' + op.DisplayName + ' }' if op.DisplayName else '',
         op.ParameterType.ToString()
     ))
-    if op.Description:
-        for line in op.Description.split('\n'):
+    dump_description(op.Description, stream)
+
+def dump_description(desc, stream):
+    if desc:
+        for line in desc.replace('\r', '').rstrip().split('\n'):
             stream.write('# TK_DESC %s\n' % line)
 
 def dump_script(builder, stream):
-    stream.write(builder.Settings['script'].replace('\r', ''))
-    if not builder.Settings['script'].endswith('\n'):
-        stream.write('\n')
+    script = builder.Settings['script']
+    for line in script.replace('\r', '').rstrip().split('\n'):
+        if not dump_script.tk_re.match(line):
+            stream.write(line + '\n')
+dump_script.tk_re = re.compile(r'^\s*#\s*TK_(\w+)', re.I)
+
 
 def get_output_directory():
     folder_dialog = FolderBrowserDialog()
